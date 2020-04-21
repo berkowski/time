@@ -1,14 +1,18 @@
 use crate::{
-    format::parse::{parse, ParsedItems},
     internal_prelude::*,
     internals,
 };
+
+#[cfg(feature = "alloc")]
+use crate::format::parse::{parse, ParsedItems};
+
 use core::{
     cmp::{Ord, Ordering, PartialOrd},
-    fmt::{self, Display},
     ops::{Add, AddAssign, Sub, SubAssign},
     time::Duration as StdDuration,
 };
+#[cfg(alloc)]
+use core::fmt::{self, Display};
 
 // Some methods could be `const fn` due to the internal structure of `Date`, but
 // are explicitly not (and have linting disabled) as it could lead to
@@ -679,7 +683,7 @@ impl Date {
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         match Date::try_from_ymd(year as i32, month as u8, day as u8) {
             Ok(date) => date,
-            Err(err) => panic!("{}", err),
+            Err(err) => panic!("{:?}", err),
         }
     }
 }
@@ -926,6 +930,7 @@ impl Date {
     /// # use time::date;
     /// assert_eq!(date!(2019-01-02).format("%Y-%m-%d"), "2019-01-02");
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn format(self, format: impl AsRef<str>) -> String {
         self.lazy_format(format).to_string()
@@ -937,6 +942,7 @@ impl Date {
     /// # use time::date;
     /// assert_eq!(date!(2019-01-02).lazy_format("%Y-%m-%d").to_string(), "2019-01-02");
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn lazy_format(self, format: impl AsRef<str>) -> impl Display {
         DeferredFormat::new(format.as_ref())
@@ -961,12 +967,14 @@ impl Date {
     ///     Ok(date!(2019-W01-3))
     /// );
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn parse(s: impl AsRef<str>, format: impl AsRef<str>) -> ParseResult<Self> {
         Self::try_from_parsed_items(parse(s.as_ref(), &format.into())?)
     }
 
     /// Given the items already parsed, attempt to create a `Date`.
+    #[cfg(alloc)]
     #[inline]
     pub(crate) fn try_from_parsed_items(items: ParsedItems) -> ParseResult<Self> {
         macro_rules! items {
@@ -1025,6 +1033,7 @@ impl Date {
     }
 }
 
+#[cfg(format = "alloc")]
 impl Display for Date {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

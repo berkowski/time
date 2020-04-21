@@ -18,6 +18,11 @@
 //! Of the structs that are usable, some methods may only be enabled due a
 //! reliance on `Instant`. These will be indicated in the documentation.
 //!
+//! ## `alloc`
+//!
+//! Enables use of features that require a global allocation scheme (e.g. Box<T>, String)
+//! Automatically enabled with the `std` feature
+//!
 //! ## `serde`
 //!
 //! [Serde](https://github.com/serde-rs/serde) support is behind a feature flag.
@@ -191,8 +196,8 @@
 // guarantees that edition 2018 is available.
 #![doc(test(no_crate_inject))]
 
-#[cfg(panicking_api)]
-#[cfg_attr(docs, doc(cfg(feature = "panicking-api")))]
+#[cfg(all(panicking_api, alloc))]
+#[cfg_attr(docs, doc(cfg(all(feature = "panicking-api", feature = "alloc"))))]
 macro_rules! format_conditional {
     ($conditional:ident) => {
         format!(concat!(stringify!($conditional), "={}"), $conditional)
@@ -229,6 +234,7 @@ macro_rules! assert_value_in_range {
 
     ($value:ident in $start:expr => $end:expr, given $($conditional:ident),+ $(,)?) => {
         #[allow(unused_comparisons)]
+        #[cfg(feature = "alloc")]
         {
             if $value < $start || $value > $end {
                 panic!(
@@ -248,6 +254,22 @@ macro_rules! assert_value_in_range {
 macro_rules! ensure_value_in_range {
     ($value:ident in $start:expr => $end:expr) => {
         #[allow(unused_comparisons)]
+        #[cfg(not(feature = "alloc"))]
+        {
+            if $value < $start || $value > $end {
+                return Err(ComponentRangeError {
+                    name: stringify!($value),
+                    minimum: i64::from($start),
+                    maximum: i64::from($end),
+                    value: i64::from($value),
+                });
+            }
+        }
+    };
+
+    ($value:ident in $start:expr => $end:expr) => {
+        #[allow(unused_comparisons)]
+        #[cfg(feature = "alloc")]
         {
             if $value < $start || $value > $end {
                 return Err(ComponentRangeError {
@@ -263,6 +285,7 @@ macro_rules! ensure_value_in_range {
 
     ($value:ident in $start:expr => $end:expr, given $($conditional:ident),+ $(,)?) => {
         #[allow(unused_comparisons)]
+        #[cfg(feature = "alloc")]
         {
             if $value < $start || $value > $end {
                 return Err(ComponentRangeError {
@@ -349,6 +372,7 @@ mod date;
 mod duration;
 /// Various error types returned by methods in the time crate.
 mod error;
+#[cfg(feature = "alloc")]
 mod format;
 /// The `Instant` struct and its associated `impl`s.
 #[cfg(std)]
@@ -377,7 +401,9 @@ mod weekday;
 pub use date::{days_in_year, is_leap_year, weeks_in_year, Date};
 pub use duration::Duration;
 pub use error::{ComponentRangeError, ConversionRangeError, Error, IndeterminateOffsetError};
+#[cfg(alloc)]
 pub(crate) use format::DeferredFormat;
+#[cfg(alloc)]
 pub use format::{validate_format_string, Format, ParseError};
 #[cfg(std)]
 pub use instant::Instant;
@@ -490,19 +516,24 @@ pub mod prelude {
 mod internal_prelude {
     #![allow(unused_imports)]
 
-    #[cfg(not(std))]
+    #[cfg(all(alloc, not(std)))]
     extern crate alloc;
 
     #[cfg(std)]
     pub(crate) use crate::Instant;
     pub(crate) use crate::{
-        format::{ParseError, ParseResult},
-        ComponentRangeError, ConversionRangeError, Date, DeferredFormat, Duration,
+        ComponentRangeError, ConversionRangeError, Date, Duration,
         IndeterminateOffsetError, NumericalDuration, NumericalStdDuration, OffsetDateTime,
         PrimitiveDateTime, Time, UtcOffset,
         Weekday::{self, Friday, Monday, Saturday, Sunday, Thursday, Tuesday, Wednesday},
     };
-    #[cfg(not(std))]
+    #[cfg(alloc)]
+    pub(crate) use crate::{
+        DeferredFormat,
+        format::{ParseError, ParseResult}
+    };
+
+    #[cfg(all(alloc, not(std)))]
     pub(crate) use alloc::{
         borrow::ToOwned,
         boxed::Box,
@@ -517,6 +548,7 @@ mod internal_prelude {
     };
 }
 
+#[cfg(alloc)]
 #[allow(clippy::missing_docs_in_private_items)]
 mod private {
     use super::*;
@@ -558,6 +590,7 @@ mod private {
 ///     Ok(())
 /// }
 /// ```
+#[cfg(alloc)]
 #[inline(always)]
 pub fn parse<T: private::Parsable>(s: impl AsRef<str>, format: impl AsRef<str>) -> ParseResult<T> {
     private::Parsable::parse(s, format)

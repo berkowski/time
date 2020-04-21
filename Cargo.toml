@@ -18,9 +18,10 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [features]
 default = ["deprecated", "std"]
+alloc = []
 deprecated = []
 panicking-api = []
-std = ["libc", "winapi", "stdweb", "standback/std"]
+std = ["libc", "winapi", "stdweb", "standback/std", "alloc"]
 
 # Internal usage. This is used when building for docs.rs and time-rs.github.io.
 # This feature should never be used by external users. It will likely be

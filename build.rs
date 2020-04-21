@@ -33,6 +33,7 @@ fn main() {
         "rand" => rand,
         "serde" => serde,
         "__doc" => docs,
+        "alloc" => alloc,
     };
 
     // Are we compiling with `cargo web`?

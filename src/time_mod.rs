@@ -1,15 +1,18 @@
 use crate::{
-    format::{parse, parse::AmPm, ParsedItems},
     internal_prelude::*,
 };
+#[cfg(alloc)]
+use crate::format::{parse, parse::AmPm, ParsedItems};
 use core::{
     cmp::Ordering,
-    fmt::{self, Display},
-    num::NonZeroU8,
     ops::{Add, AddAssign, Sub, SubAssign},
     time::Duration as StdDuration,
 };
-
+#[cfg(alloc)]
+use core::{
+    num::NonZeroU8,
+    fmt::{self, Display}
+};
 /// The number of nanoseconds in one day.
 pub(crate) const NANOS_PER_DAY: u64 = 24 * 60 * 60 * 1_000_000_000;
 
@@ -526,6 +529,7 @@ impl Time {
     /// # use time::time;
     /// assert_eq!(time!(0:00).format("%r"), "12:00:00 am");
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn format(self, format: impl AsRef<str>) -> String {
         self.lazy_format(format).to_string()
@@ -537,6 +541,7 @@ impl Time {
     /// # use time::time;
     /// assert_eq!(time!(0:00).lazy_format("%r").to_string(), "12:00:00 am");
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn lazy_format(self, format: impl AsRef<str>) -> impl Display {
         DeferredFormat::new(format.as_ref())
@@ -569,12 +574,14 @@ impl Time {
     ///     Ok(time!(23:59:59))
     /// );
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn parse(s: impl AsRef<str>, format: impl AsRef<str>) -> ParseResult<Self> {
         Self::try_from_parsed_items(parse(s.as_ref(), &format.into())?)
     }
 
     /// Given the items already parsed, attempt to create a `Time`.
+    #[cfg(alloc)]
     #[inline]
     pub(crate) fn try_from_parsed_items(items: ParsedItems) -> ParseResult<Self> {
         macro_rules! items {
@@ -623,6 +630,7 @@ impl Time {
     }
 }
 
+#[cfg(feature = "alloc")]
 impl Display for Time {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
