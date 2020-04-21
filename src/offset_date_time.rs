@@ -1,17 +1,20 @@
 use crate::{
-    format::parse::{parse, ParsedItems},
     internal_prelude::*,
-    Format,
 };
+#[cfg(alloc)]
+use crate::Format;
+#[cfg(feature = "alloc")]
+use crate::format::parse::{parse, ParsedItems};
 #[cfg(std)]
 use core::convert::From;
 use core::{
     cmp::Ordering,
-    fmt::{self, Display},
     hash::{Hash, Hasher},
     ops::{Add, AddAssign, Sub, SubAssign},
     time::Duration as StdDuration,
 };
+#[cfg(alloc)]
+use core::fmt::{self, Display};
 #[cfg(std)]
 use std::time::SystemTime;
 
@@ -719,6 +722,7 @@ impl OffsetDateTime {
     ///     "2019-01-02 12:00:00 am +0000",
     /// );
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn format(self, format: impl Into<Format>) -> String {
         self.lazy_format(format).to_string()
@@ -737,6 +741,7 @@ impl OffsetDateTime {
     ///     "2019-01-02 12:00:00 am +0000",
     /// );
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn lazy_format(self, format: impl Into<Format>) -> impl Display {
         DeferredFormat::new(format)
@@ -763,12 +768,14 @@ impl OffsetDateTime {
     ///     Ok(date!(2019-W01-3).with_time(time!(12:00)).assume_utc()),
     /// );
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn parse(s: impl AsRef<str>, format: impl Into<Format>) -> ParseResult<Self> {
         Self::try_from_parsed_items(parse(s.as_ref(), &format.into())?)
     }
 
     /// Given the items already parsed, attempt to create an `OffsetDateTime`.
+    #[cfg(alloc)]
     #[inline(always)]
     pub(crate) fn try_from_parsed_items(items: ParsedItems) -> ParseResult<Self> {
         let offset = UtcOffset::try_from_parsed_items(items)?;
@@ -776,6 +783,7 @@ impl OffsetDateTime {
     }
 }
 
+#[cfg(alloc)]
 impl Display for OffsetDateTime {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -1,15 +1,17 @@
 use crate::{
-    format::parse::{parse, ParsedItems},
     internal_prelude::*,
 };
+#[cfg(feature = "alloc")]
+use crate::format::parse::{parse, ParsedItems};
 #[cfg(std)]
 use core::convert::From;
 use core::{
     cmp::Ordering,
-    fmt::{self, Display},
     ops::{Add, AddAssign, Sub, SubAssign},
     time::Duration as StdDuration,
 };
+#[cfg(alloc)]
+use core::fmt::{self, Display};
 #[cfg(std)]
 use std::time::SystemTime;
 
@@ -486,6 +488,7 @@ impl PrimitiveDateTime {
     ///     "2019-01-02 12:00:00 am"
     /// );
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn format(self, format: impl AsRef<str>) -> String {
         self.lazy_format(format).to_string()
@@ -500,6 +503,7 @@ impl PrimitiveDateTime {
     ///     "2019-01-02 12:00:00 am"
     /// );
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn lazy_format(self, format: impl AsRef<str>) -> impl Display {
         DeferredFormat::new(format.as_ref())
@@ -525,12 +529,14 @@ impl PrimitiveDateTime {
     ///     Ok(date!(2019-W01-3).with_time(time!(12:00))),
     /// );
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn parse(s: impl AsRef<str>, format: impl AsRef<str>) -> ParseResult<Self> {
         Self::try_from_parsed_items(parse(s.as_ref(), &format.into())?)
     }
 
     /// Given the items already parsed, attempt to create a `PrimitiveDateTime`.
+    #[cfg(alloc)]
     #[inline(always)]
     pub(crate) fn try_from_parsed_items(items: ParsedItems) -> ParseResult<Self> {
         Ok(Self {
@@ -540,6 +546,7 @@ impl PrimitiveDateTime {
     }
 }
 
+#[cfg(alloc)]
 impl Display for PrimitiveDateTime {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

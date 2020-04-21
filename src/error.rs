@@ -9,10 +9,14 @@ use core::fmt;
 // 16.
 #[allow(clippy::missing_docs_in_private_items)] // variants only
 #[cfg_attr(supports_non_exhaustive, non_exhaustive)]
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Error {
     ConversionRange(ConversionRangeError),
+    #[cfg(alloc)]
     ComponentRange(Box<ComponentRangeError>),
+    #[cfg(not(alloc))]
+    ComponentRange(ComponentRangeError),
+    #[cfg(alloc)]
     Parse(ParseError),
     IndeterminateOffset(IndeterminateOffsetError),
     #[cfg(not(supports_non_exhaustive))]
@@ -20,12 +24,14 @@ pub enum Error {
     __NonExhaustive,
 }
 
+#[cfg(alloc)]
 impl fmt::Display for Error {
     #[inline(always)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::ConversionRange(e) => e.fmt(f),
             Error::ComponentRange(e) => e.fmt(f),
+            #[cfg(alloc)]
             Error::Parse(e) => e.fmt(f),
             Error::IndeterminateOffset(e) => e.fmt(f),
             #[cfg(not(supports_non_exhaustive))]
@@ -87,7 +93,7 @@ impl From<ConversionRangeError> for Error {
 /// range, causing a failure.
 // i64 is the narrowest type fitting all use cases. This eliminates the need
 // for a type parameter.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct ComponentRangeError {
     /// Name of the component.
     pub(crate) name: &'static str,
@@ -98,9 +104,11 @@ pub struct ComponentRangeError {
     /// Value that was provided.
     pub(crate) value: i64,
     /// The minimum and/or maximum is only valid with the following values.
+    #[cfg(feature = "alloc")]
     pub(crate) given: Vec<(&'static str, i64)>,
 }
 
+#[cfg(alloc)]
 impl fmt::Display for ComponentRangeError {
     #[inline(always)]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -111,7 +119,7 @@ impl fmt::Display for ComponentRangeError {
         )?;
 
         let mut iter = self.given.iter();
-        if let Some((name, value)) = iter.next() {
+        if let Some((name, value)) = self.given.iter.next() {
             write!(f, " given {}={}", name, value)?;
             for (name, value) in iter {
                 write!(f, ", {}={}", name, value)?;
@@ -125,13 +133,21 @@ impl fmt::Display for ComponentRangeError {
 impl From<ComponentRangeError> for Error {
     #[inline(always)]
     fn from(original: ComponentRangeError) -> Self {
-        Error::ComponentRange(Box::new(original))
+        cfg_if::cfg_if! {
+            if #[cfg(alloc)] {
+                Error::ComponentRange(Box::new(original))
+            }
+            else {
+                Error::ComponentRange(original)
+            }
+        }
     }
 }
 
 #[cfg(std)]
 impl std::error::Error for ComponentRangeError {}
 
+#[cfg(alloc)]
 impl From<ParseError> for Error {
     #[inline(always)]
     fn from(original: ParseError) -> Self {

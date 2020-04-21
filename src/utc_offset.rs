@@ -1,7 +1,8 @@
 use crate::{
-    format::{parse, ParsedItems},
     internal_prelude::*,
 };
+#[cfg(alloc)]
+use crate::format::{parse, ParsedItems};
 use core::fmt::{self, Display};
 #[cfg(cargo_web)]
 use stdweb::js;
@@ -266,6 +267,7 @@ impl UtcOffset {
     /// assert_eq!(UtcOffset::hours(2).format("%z"), "+0200");
     /// assert_eq!(UtcOffset::hours(-2).format("%z"), "-0200");
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn format(self, format: impl AsRef<str>) -> String {
         self.lazy_format(format).to_string()
@@ -278,6 +280,7 @@ impl UtcOffset {
     /// assert_eq!(UtcOffset::hours(2).lazy_format("%z").to_string(), "+0200");
     /// assert_eq!(UtcOffset::hours(-2).lazy_format("%z").to_string(), "-0200");
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn lazy_format(self, format: impl AsRef<str>) -> impl Display {
         DeferredFormat::new(format.as_ref())
@@ -292,12 +295,14 @@ impl UtcOffset {
     /// assert_eq!(UtcOffset::parse("+0200", "%z"), Ok(UtcOffset::hours(2)));
     /// assert_eq!(UtcOffset::parse("-0200", "%z"), Ok(UtcOffset::hours(-2)));
     /// ```
+    #[cfg(alloc)]
     #[inline(always)]
     pub fn parse(s: impl AsRef<str>, format: impl AsRef<str>) -> ParseResult<Self> {
         Self::try_from_parsed_items(parse(s.as_ref(), &format.into())?)
     }
 
     /// Given the items already parsed, attempt to create a `UtcOffset`.
+    #[cfg(alloc)]
     #[inline(always)]
     pub(crate) fn try_from_parsed_items(items: ParsedItems) -> ParseResult<Self> {
         items.offset.ok_or(ParseError::InsufficientInformation)
