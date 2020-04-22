@@ -1,8 +1,6 @@
-use crate::{
-    internal_prelude::*,
-};
 #[cfg(alloc)]
 use crate::format::{parse, parse::AmPm, ParsedItems};
+use crate::internal_prelude::*;
 use core::{
     cmp::Ordering,
     ops::{Add, AddAssign, Sub, SubAssign},
@@ -10,8 +8,8 @@ use core::{
 };
 #[cfg(alloc)]
 use core::{
+    fmt::{self, Display},
     num::NonZeroU8,
-    fmt::{self, Display}
 };
 /// The number of nanoseconds in one day.
 pub(crate) const NANOS_PER_DAY: u64 = 24 * 60 * 60 * 1_000_000_000;

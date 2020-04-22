@@ -1,18 +1,15 @@
-use crate::{
-    internal_prelude::*,
-    internals,
-};
+use crate::{internal_prelude::*, internals};
 
 #[cfg(feature = "alloc")]
 use crate::format::parse::{parse, ParsedItems};
 
+#[cfg(alloc)]
+use core::fmt::{self, Display};
 use core::{
     cmp::{Ord, Ordering, PartialOrd},
     ops::{Add, AddAssign, Sub, SubAssign},
     time::Duration as StdDuration,
 };
-#[cfg(alloc)]
-use core::fmt::{self, Display};
 
 // Some methods could be `const fn` due to the internal structure of `Date`, but
 // are explicitly not (and have linting disabled) as it could lead to

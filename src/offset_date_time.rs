@@ -1,20 +1,18 @@
-use crate::{
-    internal_prelude::*,
-};
-#[cfg(alloc)]
-use crate::Format;
 #[cfg(feature = "alloc")]
 use crate::format::parse::{parse, ParsedItems};
+use crate::internal_prelude::*;
+#[cfg(alloc)]
+use crate::Format;
 #[cfg(std)]
 use core::convert::From;
+#[cfg(alloc)]
+use core::fmt::{self, Display};
 use core::{
     cmp::Ordering,
     hash::{Hash, Hasher},
     ops::{Add, AddAssign, Sub, SubAssign},
     time::Duration as StdDuration,
 };
-#[cfg(alloc)]
-use core::fmt::{self, Display};
 #[cfg(std)]
 use std::time::SystemTime;
 

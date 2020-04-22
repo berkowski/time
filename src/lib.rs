@@ -521,16 +521,16 @@ mod internal_prelude {
 
     #[cfg(std)]
     pub(crate) use crate::Instant;
-    pub(crate) use crate::{
-        ComponentRangeError, ConversionRangeError, Date, Duration,
-        IndeterminateOffsetError, NumericalDuration, NumericalStdDuration, OffsetDateTime,
-        PrimitiveDateTime, Time, UtcOffset,
-        Weekday::{self, Friday, Monday, Saturday, Sunday, Thursday, Tuesday, Wednesday},
-    };
     #[cfg(alloc)]
     pub(crate) use crate::{
+        format::{ParseError, ParseResult},
         DeferredFormat,
-        format::{ParseError, ParseResult}
+    };
+    pub(crate) use crate::{
+        ComponentRangeError, ConversionRangeError, Date, Duration, IndeterminateOffsetError,
+        NumericalDuration, NumericalStdDuration, OffsetDateTime, PrimitiveDateTime, Time,
+        UtcOffset,
+        Weekday::{self, Friday, Monday, Saturday, Sunday, Thursday, Tuesday, Wednesday},
     };
 
     #[cfg(all(alloc, not(std)))]
