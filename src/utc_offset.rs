@@ -3,8 +3,6 @@ use crate::{
     internal_prelude::*,
 };
 use core::fmt::{self, Display};
-#[cfg(cargo_web)]
-use stdweb::js;
 
 /// An offset from UTC.
 ///
@@ -13,10 +11,6 @@ use stdweb::js;
 /// you need support outside this range, please file an issue with your use
 /// case.
 #[cfg_attr(serde, derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(
-    serde,
-    serde(from = "crate::serde::UtcOffset", into = "crate::serde::UtcOffset")
-)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct UtcOffset {
     /// The number of seconds offset from UTC. Positive is east, negative is
@@ -492,6 +486,7 @@ fn try_local_offset_at(datetime: OffsetDateTime) -> Option<UtcOffset> {
             diff_secs.try_into().ok().map(UtcOffset::seconds)
         } else if #[cfg(cargo_web)] {
             use stdweb::unstable::TryInto;
+            use stdweb::js;
 
             let timestamp_utc = datetime.timestamp();
             let low_bits = (timestamp_utc & 0xFF_FF_FF_FF) as i32;
